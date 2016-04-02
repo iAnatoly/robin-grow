@@ -1,20 +1,19 @@
 # robin-grow
-# Now with 100% Less Spam!
+# simplified version
 
 Step 1: Install a userscript extension such as greasemonkey or tampermonkey:
 
 Click here: http://tampermonkey.net
 
-
 Then, click this link to install the script:
 
-https://github.com/vartan/robin-grow/raw/master/robin.user.js
+https://github.com/iAnatoly/robin-grow/raw/master/robin.user.js
 
 If you get a bunch of code instead of it installing, you can copy and paste the code as a new script in greasemonkey/tampermonkey.
 
 You can view the source code or contribute at: 
 
-https://github.com/vartan/robin-grow
+https://github.com/iAnatoly/robin-grow
 
 
 Updates (times Pacific time)
@@ -31,6 +30,8 @@ Updates (times Pacific time)
     1.1: Gets actual counts from reddit backend
     1.2: Filters out bots which start with '['
     1.3: Filters out messages that users keep repeating
+    (fork)
+    2.0: removed spam filtering and settings. The less code the better.
 
 Screenshot of information above "Grow" button
 

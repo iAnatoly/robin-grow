@@ -1,11 +1,10 @@
 // ==UserScript==
 // @name         Robin Grow
 // @namespace    http://tampermonkey.net/
-// @version      1.59
+// @version      fork-2.0
 // @description  Try to take over the world!
 // @author       /u/mvartan
 // @include      https://www.reddit.com/robin*
-// @updateURL    https://github.com/vartan/robin-grow/raw/master/robin.user.js
 // @require       http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js
 // @grant   GM_getValue
 // @grant   GM_setValue
@@ -98,149 +97,13 @@
         setTimeout(function() {
             var oldVal = $(".text-counter-input").val();
 
-            $(".text-counter-input").val("[Robin-Grow] I automatically voted to grow, and so can you! http://redd.it/4cwk2s !").submit();
+            $(".text-counter-input").val("And i forgot just why I vote.").submit();
+            $(".text-counter-input").val("Oh yeah, I guess it makes me smile.").submit();
+            $(".text-counter-input").val("I find it hard. It is hard to find.").submit();
+            $(".text-counter-input").val("Oh, well, whatever, never mind.").submit();
             $(".text-counter-input").val(oldVal);
 
         }, 10000);
-    }
-
-    // hash string so finding spam doesn't take up too much memory
-    function hashString(str) {
-        var hash = 0;
-
-        if (str == 0) return hash;
-
-        for (i = 0; i < str.length; i++) {
-            char = str.charCodeAt(i);
-            if (str.charCodeAt(i) > 0x40) { // Let's try to not include the number in the hash in order to filter bots
-                hash = ((hash << 5) - hash) + char;
-                hash = hash & hash; // Convert to 32bit integer
-            }
-        }
-
-        return hash;
-    }
-
-    // Searches through all messages to find and hide spam
-    var spamCounts = {};
-
-    function findAndHideSpam() {
-        if(settings["findAndHideSpam"]) {
-            var messages = $(".robin--user-class--user");
-            for (var i = messages.length - 1000; i >= 0; i--) {
-                $(messages[i]).remove()
-            }
-            $('.robin--user-class--user .robin-message--message:not(.addon--hide)').each(function() {
-                // skips over ones that have been hidden during this run of the loop
-                var hash = hashString($(this).text());
-                var user = $('.robin-message--from', $(this).closest('.robin-message')).text();
-
-                if (!(user in spamCounts)) {
-                    spamCounts[user] = {};
-                }
-
-                if (hash in spamCounts[user]) {
-                    spamCounts[user][hash].count++;
-                    spamCounts[user][hash].elements.push(this);
-                } else {
-                    spamCounts[user][hash] = {
-                        count: 1,
-                        text: $(this).text(),
-                        elements: [this]
-                    };
-                }
-            });
-
-            $.each(spamCounts, function(user, messages) {
-                $.each(messages, function(hash, message) {
-                    if (message.count >= 3) {
-                        $.each(message.elements, function(index, element) {
-                            //console.log("SPAM REMOVE: "+$(element).closest('.robin-message').text())
-                            $(element).closest('.robin-message').addClass('addon--hide').remove();
-                        });
-                    } else {
-                        message.count = 0;
-                    }
-
-                    message.elements = [];
-                });
-            });
-        }
-    }
-
-
-
-
-    function removeSpam() {
-        if(settings["removeSpam"]) {
-            $(".robin--user-class--user").filter(function(num, message) {
-                var text = $(message).find(".robin-message--message").text();
-                var filter = text.indexOf("[") === 0 ||
-                    text == "voted to STAY" ||
-                    text == "voted to GROW" ||
-                    text == "voted to ABANDON" ||
-                    text.indexOf("Autovoter") > -1 ||
-                    (/[\u0080-\uFFFF]/.test(text));
-
-                ; // starts with a [ or has "Autovoter"
-                // if(filter)console.log("removing "+text);
-                return filter;
-            }).remove();
-        }
-    }
-
-    /* Detects unicode spam - Credit to travelton (https://gist.github.com/travelton)*/
-    // NB this event is depreciated. - /u/verox-
-    $(document).on('DOMNodeInserted', function(e) {
-        findAndHideSpam();
-        removeSpam();
-    });
-
-    // Individual mute button /u/verox-
-    var targetNodes = $("#robinChatMessageList");
-    var myObserver = new MutationObserver(mutationHandler);
-    var obsConfig = {
-        childList: true,
-        characterData: true,
-        attributes: true,
-        subtree: true
-    };
-    var mutedList = [];
-
-    $(".robin--username").click(function() {
-        var clickedUser = mutedList.indexOf($(this).text());
-
-        if (clickedUser == -1) {
-            // Mute our user.
-            mutedList.push($(this).text());
-            $(this).css("text-decoration", "line-through");
-        } else {
-            // Unmute our user.
-            $(this).css("text-decoration", "none");
-            mutedList.splice(clickedUser, 1);
-        }
-
-        console.log(mutedList);
-    });
-
-    //--- Add a target node to the observer. Can only add one node at a time.
-    targetNodes.each(function() {
-        myObserver.observe(this, obsConfig);
-    });
-
-    function mutationHandler(mutationRecords) {
-        mutationRecords.forEach(function(mutation) {
-            if (mutation.type != "childList")
-                return;
-
-            var jq = $(mutation.addedNodes);
-
-            // cool we have a message.
-            var thisUser = $(jq[0].children[1]).text();
-            if (mutedList.indexOf(thisUser) >= 0) {
-                $(jq[0]).hide();
-            }
-        });
     }
 
     // Settings
@@ -260,41 +123,6 @@
     }
     $("#settingContent").append('<div class="robin-chat--vote" style="font-weight: bold; padding: 5px;" id="closeBtn">Close Settings</div>');
     $("#closeBtn").on("click", closeSettings);
-    // Dom Setup end
-    function saveSetting(settings) {
-        localStorage["robin-grow-settings"] = JSON.stringify(settings)
-    }
-
-    function loadSetting() {
-        var setting = localStorage["robin-grow-settings"];
-        if(setting) {
-            setting = JSON.parse(setting);
-        } else {
-            setting = {};
-        }
-        return setting;
-    }
-
-    var settings = loadSetting();
-
-    function addBoolSetting(name, description, defaultSetting) {
-        $("#settingContent").append('<div id="robinDesktopNotifier" class="robin-chat--sidebar-widget robin-chat--notification-widget"><label><input type="checkbox" name="setting-' + name + '">' + description + '</label></div>');
-        $("input[name='setting-" + name + "']").prop("checked", defaultSetting)
-            .on("click", function() {
-                settings[name] = !settings[name];
-                saveSetting(settings);
-            });
-        settings[name] = defaultSetting;
-    }
-
-    // Options begin
-    addBoolSetting("removeSpam", "Remove bot spam", true);
-    addBoolSetting("findAndHideSpam", "Removes messages that have been send more than 3 times", true);
-    // Options end
-
-    // Add version at the end
-    $("#settingContent").append('<div class="robin-chat--sidebar-widget robin-chat--report" style="text-align:center;"><a target="_blank" href="https://github.com/vartan/robin-grow">robin-grow - Version ' + GM_info.script.version + '</a></div>');
-
 
     setInterval(update, 10000);
     update();
